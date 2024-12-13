@@ -1,0 +1,551 @@
+<!DOCTYPE html> 
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Herramientas de Desarrollo Web</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <style>
+        /* Estilo para el cuerpo */
+        body {
+            font-family: Arial, sans-serif; /* Fuente legible */
+            margin: 0; /* Elimina márgenes */
+            padding: 0; /* Elimina padding */
+            line-height: 1.6; /* Altura de línea para mejorar la legibilidad */
+        }
+    
+        /* Secciones generales */
+        .section {
+            margin: 100px auto 50px; /* Espaciado uniforme */
+            text-align: center; /* Centra el texto */
+            padding: 20px; /* Espaciado interno */
+            max-width: 1200px; /* Ancho máximo */
+        }
+    
+        /* Títulos */
+        .section h2 {
+            margin: 20px 0 40px; /* Espaciado del título */
+            font-size: 2rem; /* Tamaño del texto */
+            text-transform: uppercase; /* Texto en mayúsculas */
+            letter-spacing: 1.5px; /* Espaciado entre letras */
+            color: #333; /* Color oscuro */
+        }
+    
+        /* Menú fijo */
+        .fixed-menu {
+            position: fixed; /* Siempre visible */
+            top: 0; /* Pegado arriba */
+            width: 100%; /* Ancho completo */
+            background-color: #0e0909; /* Fondo oscuro */
+            z-index: 9999; /* Superposición máxima */
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Sombra para realce */
+        }
+    
+        /* Enlaces del menú */
+        .fixed-menu a {
+            text-decoration: none; /* Sin subrayado */
+            color: white; /* Texto blanco */
+            padding: 15px 20px; /* Espaciado interno */
+            display: inline-block; /* Bloque en línea */
+            font-weight: bold; /* Texto en negrita */
+            font-size: 1rem; /* Tamaño del texto */
+            transition: background-color 0.3s ease, color 0.3s ease; /* Transiciones */
+        }
+    
+        /* Efecto al pasar el ratón */
+        .fixed-menu a:hover {
+            background-color: #ddd; /* Fondo claro */
+            color: black; /* Texto oscuro */
+        }
+    
+        /* Contenedores de video y canvas */
+        .video-container,
+        .canvas-container {
+            margin: 20px 0; /* Espaciado externo */
+            padding: 10px; /* Espaciado interno */
+        }
+    
+        /* Estilo del video */
+        video {
+            display: block; /* Elemento bloque */
+            margin: auto; /* Centrado */
+            max-width: 100%; /* Ancho máximo */
+            border: 1px solid #ddd; /* Borde ligero */
+            border-radius: 5px; /* Bordes redondeados */
+        }
+    
+        /* Estilo del canvas */
+        canvas {
+            display: block;
+            margin: auto;
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    
+        /* Texto general */
+        p {
+            font-size: 1rem; /* Tamaño estándar */
+            color: #555; /* Color gris medio */
+            line-height: 1.8; /* Espaciado entre líneas */
+            margin: 20px 0; /* Margen superior e inferior */
+        }
+    </style>
+    
+    
+</head>
+
+<body>
+    <header class="fixed-menu">
+        <!-- Enlaces a las secciones -->
+        <a href="#">Inicio</a>
+        <a href="#motion">Detección de Movimiento</a>
+        <a href="#table">Tabla Dinámica</a>
+        <a href="#form">Formulario</a>
+        <a href="#voice">Reconocimiento de Voz</a>
+        <a href="#bootstrap">Maquetación Bootstrap</a>
+        <a href="#aframe">A-Frame</a>
+        <a href="#arrays">Arrays Dinámicos</a>
+    </header>
+    
+
+    <main>
+        <section id="motion" class="section">
+            <h2>Detección de Movimiento</h2>
+            <p><strong>Descripción:</strong></p>
+            <ul>
+                <li>Detecta movimiento en tiempo real usando la cámara del dispositivo.</li>
+                <li>Comparación de frames consecutivos para calcular diferencias.</li>
+            </ul>
+            <p><strong>Caso de Uso:</strong></p>
+            <ul>
+                <li><strong>Sistemas de Seguridad:</strong> Monitoreo de áreas restringidas.</li>
+                <li><strong>Interacción Usuario-Dispositivo:</strong> Controles basados en movimiento.</li>
+            </ul>
+            <p><strong>Funcionalidad Técnica:</strong></p>
+            <ul>
+                <li>Uso de <code>navigator.mediaDevices.getUserMedia</code> para acceder a la cámara.</li>
+                <li>Procesamiento de imágenes en un <code>canvas</code>.</li>
+                <li>Comparación de píxeles para determinar cambios.</li>
+            </ul>
+            <div class="video-container">
+                <video id="video" width="700px" height="500px" autoplay></video>
+            </div>
+            <div class="canvas-container">
+                <canvas id="canvas" width="700px" height="500px" style="border: 1px solid black;"></canvas>
+            </div>
+            <div id="estado"></div>
+            <script>
+                const video = document.getElementById('video');
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                const detencion = document.getElementById('estado');
+                let anteriorFrame = null;
+        
+                // Acceso a la cámara
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream; // Conecta la cámara al video
+                    })
+                    .catch(function (error) {
+                        console.error("Error al activar la cámara:", error);
+                    });
+        
+                // Detección de movimiento
+                function detencionMovimiento() {
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const frameActual = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        
+                    if (anteriorFrame) {
+                        let diferencia = 0;
+                        for (let i = 0; i < frameActual.data.length; i += 4) {
+                            diferencia += Math.abs(frameActual.data[i] - anteriorFrame.data[i]);
+                            diferencia += Math.abs(frameActual.data[i + 1] - anteriorFrame.data[i + 1]);
+                            diferencia += Math.abs(frameActual.data[i + 2] - anteriorFrame.data[i + 2]);
+                        }
+        
+                        // Actualización del estado
+                        if (diferencia > 3000000) {
+                            detencion.innerHTML = "<h2>¡Movimiento detectado!</h2>";
+                        } else {
+                            detencion.innerHTML = "<h2>No se detecta movimiento</h2>";
+                        }
+                    }
+        
+                    anteriorFrame = frameActual; // Actualiza el frame previo
+                    requestAnimationFrame(detencionMovimiento); // Llama de nuevo
+                }
+        
+                video.addEventListener('play', function () {
+                    detencionMovimiento();
+                });
+            </script>
+        </section>
+        
+ 
+    <section id="aframe" class="section">    
+            <h2>Escenas en A-Frame</h2>
+            <p><strong>Descripción:</strong></p>
+            <ul>
+                <li>Permite crear entornos 3D interactivos utilizando HTML.</li>
+                <li>Soporta visualización inmersiva en navegadores compatibles con VR.</li>
+            </ul>
+            <p><strong>Caso de Uso:</strong></p>
+            <ul>
+                <li><strong>Visualización de Productos:</strong> Mostrar modelos 3D en tiendas online.</li>
+                <li><strong>Educación:</strong> Simulación de conceptos complejos como sistemas solares.</li>
+                <li><strong>Videojuegos:</strong> Desarrollo de experiencias interactivas en VR.</li>
+            </ul>
+            <p><strong>Funcionalidad Técnica:</strong></p>
+            <ul>
+                <li>Uso de etiquetas como <code>&lt;a-scene&gt;</code>, <code>&lt;a-plane&gt;</code> y <code>&lt;a-camera&gt;</code>.</li>
+                <li>Soporte para atributos como posición, rotación y color para personalización.</li>
+            </ul>
+        
+            <!-- Escena de A-Frame -->
+            <!-- <a-scene> -->
+                <!--
+                    Plano principal:
+                    - Representa el suelo de la escena.
+                    - Contiene una imagen y un enlace interactivo.
+                -->
+                <!-- <a-plane position="0 0 -4" rotation="-90 0 0" width="4" height="4" color="blue"> -->
+                    <!-- Imagen dentro del plano -->
+                    <!--
+                        <a-image>:
+                        - Muestra una imagen dentro del plano.
+                        - Atributos:
+                            - src: URL de la imagen.
+                            - position: Posición de la imagen dentro del plano.
+                            - title: Texto que aparece al pasar el ratón sobre la imagen.
+                    -->
+                    <!-- <a-image src="https://example.com/image.jpg" position="0 0.5 0" title="Diseño"></a-image> -->
+                    <!-- Enlace interactivo -->
+                    <!--
+                        <a-link>:
+                        - Crea un enlace interactivo.
+                        - Atributos:
+                            - href: URL a la que redirige.
+                            - title: Texto descriptivo.
+                            - position: Ubicación en la escena.
+                            - color: Color del enlace.
+                    -->
+                    <!-- <a-link href="https://aframe.io" title="Más Información" position="0 -0.5 0" color="white"></a-link> -->
+                <!-- </a-plane> -->
+        
+                <!--
+                    Plano lateral izquierdo:
+                    - Un plano que muestra texto.
+                    - Color rojo con texto naranja.
+                -->
+                <!-- <a-plane position="-2 2 -4" rotation="0 90 0" width="4" height="4" color="red" -->
+                         <!-- text="value:¡Hola amigos!; color:orange; align:center; width:8px"></a-plane> -->
+        
+                <!--
+                    Plano lateral derecho:
+                    - Similar al izquierdo pero con un texto diferente.
+                    - Color rosa con texto púrpura.
+                -->
+                <!-- <a-plane position="2 2 -4" rotation="0 -90 0" width="4" height="4" color="pink" -->
+                         <!-- text="value:¡Bienvenidos!; color:purple; align:center; width:8px"></a-plane> -->
+        
+                <!--
+                    Cielo de la escena:
+                    - <a-sky>: Define el fondo esférico de la escena.
+                    - Atributo:
+                        - color: Color del cielo (en este caso, azul claro).
+                -->
+                <!-- <a-sky color="skyblue"></a-sky> -->
+        
+                <!--
+                    Cámara interactiva con cursor:
+                    - <a-camera>: Representa la cámara de la escena (vista del usuario).
+                    - <a-cursor>: Agrega un cursor interactivo en el centro de la vista.
+                    - Atributos:
+                        - color: Color del cursor (en este caso, amarillo).
+                -->
+                <!-- <a-camera> -->
+                    <!-- <a-cursor color="yellow"></a-cursor> -->
+                <!-- </a-camera> -->
+            <!-- </a-scene> -->
+        </section>
+        
+        <section id="form" class="section">
+            <h2>Formulario y Tabla Dinámica</h2>
+            <p><strong>Descripción:</strong></p>
+            <ul>
+                <li>Permite al usuario ingresar datos en un formulario.</li>
+                <li>Los datos ingresados se almacenan en un array y se muestran en una tabla dinámica.</li>
+            </ul>
+            <p><strong>Caso de Uso:</strong></p>
+            <ul>
+                <li><strong>Gestión de Información Personal:</strong> Registrar datos de usuarios.</li>
+                <li><strong>Interacción Cliente-Servidor:</strong> Enviar datos ingresados a un servidor.</li>
+            </ul>
+        
+            <!-- Formulario -->
+            <form id="datosper">
+                <label>Nombre:</label><br>
+                <input type="text" id="nombre" name="nombre" required><br><br>
+                <label>Ciudad:</label><br>
+                <input type="text" id="ciudad" name="ciudad" required><br><br>
+                <label>Edad:</label><br>
+                <input type="number" id="edad" name="edad" min="0" required><br><br>
+                <button type="button" onclick="añadirPersona()">INSERTAR</button>
+            </form>
+        
+            <!-- Tabla dinámica -->
+            <h2>Datos Ingresados</h2>
+            <div class="container mt-5">
+                <table class="table table-bordered table-striped text-center">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Edad</th>
+                            <th>Ciudad</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body"></tbody>
+                </table>
+            </div>
+        
+            <script>
+                let personas = []; // Array para almacenar los datos
+        
+                // Agrega una nueva persona al array y actualiza la tabla
+                function añadirPersona() {
+                    const nombre = document.getElementById('nombre').value;
+                    const ciudad = document.getElementById('ciudad').value;
+                    const edad = document.getElementById('edad').value;
+        
+                    if (!nombre || !ciudad || !edad) {
+                        alert("Todos los campos son obligatorios.");
+                        return;
+                    }
+        
+                    // Crea un objeto con los datos del formulario
+                    const nuevaPersona = { nombre, ciudad, edad };
+                    personas.push(nuevaPersona);
+        
+                    // Limpia el formulario y actualiza la tabla
+                    document.getElementById('datosper').reset();
+                    generarTabla(personas);
+                }
+        
+                // Genera filas dinámicas para la tabla
+                function generarTabla(datos) {
+                    const cuerpoTabla = document.getElementById('tabla-body');
+                    cuerpoTabla.innerHTML = "";
+        
+                    datos.forEach(persona => {
+                        const fila = document.createElement('tr');
+                        Object.values(persona).forEach(valor => {
+                            const celda = document.createElement('td');
+                            celda.textContent = valor;
+                            fila.appendChild(celda);
+                        });
+                        cuerpoTabla.appendChild(fila);
+                    });
+                }
+            </script>
+        </section>
+        
+        
+        
+
+        <section id="voice" class="section">
+            <h2>Reconocimiento de Voz</h2>
+            <p><strong>Descripción:</strong></p>
+            <ul>
+                <li>Permite capturar texto hablado en tiempo real utilizando la API <code>webkitSpeechRecognition</code>.</li>
+                <li>Traduce los comandos de voz a texto y los muestra en la interfaz.</li>
+            </ul>
+            <p><strong>Caso de Uso:</strong></p>
+            <ul>
+                <li><strong>Accesibilidad:</strong> Facilitar la navegación en aplicaciones para personas con discapacidades.</li>
+                <li><strong>Asistentes Virtuales:</strong> Crear asistentes personalizados que respondan a comandos de voz.</li>
+                <li><strong>Transcripción:</strong> Convertir discursos en texto para documentos o análisis.</li>
+            </ul>
+            <p><strong>Funcionalidad Técnica:</strong></p>
+            <ul>
+                <li>Usa eventos como <code>onstart</code>, <code>onresult</code>, y <code>onerror</code> para manejar el reconocimiento.</li>
+                <li>Permite interacción continua (<code>continuous: true</code>) y resultados provisionales (<code>interimResults: true</code>).</li>
+            </ul>
+            <button id="iniciar">Iniciar</button>
+            <button id="parar">Parar</button>
+            <div id="mensaje"></div>
+            <script>
+                const iniciar = document.getElementById("iniciar");
+                const parar = document.getElementById("parar");
+                const mensaje = document.getElementById("mensaje");
+        
+                if ('webkitSpeechRecognition' in window) {
+                    const recognition = new webkitSpeechRecognition();
+                    recognition.lang = 'es-ES'; // Idioma español
+                    recognition.continuous = true; // Reconocimiento continuo
+                    recognition.interimResults = true; // Resultados provisionales
+        
+                    // Eventos principales
+                    recognition.onstart = () => {
+                        mensaje.textContent = "Escuchando..."; // Indica que está activo
+                        mensaje.style.color = "green";
+                    };
+        
+                    recognition.onresult = (event) => {
+                        let mensajeFinal = "";
+                        for (let i = event.resultIndex; i < event.results.length; ++i) {
+                            if (event.results[i].isFinal) {
+                                mensajeFinal += event.results[i][0].transcript;
+                            } else {
+                                mensajeFinal += event.results[i][0].transcript + " ";
+                            }
+                        }
+                        mensaje.textContent = mensajeFinal; // Muestra el texto capturado
+                    };
+        
+                    recognition.onerror = (event) => {
+                        mensaje.textContent = `Error: ${event.error}`; // Muestra errores
+                        mensaje.style.color = "red";
+                    };
+        
+                    recognition.onend = () => {
+                        mensaje.textContent = "Reconocimiento detenido."; // Cuando finaliza
+                        mensaje.style.color = "orange";
+                    };
+        
+                    // Eventos de los botones
+                    iniciar.onclick = () => recognition.start(); // Inicia el reconocimiento
+                    parar.onclick = () => recognition.stop(); // Detiene el reconocimiento
+                } else {
+                    mensaje.textContent = "Este navegador no soporta reconocimiento de voz.";
+                    mensaje.style.color = "red";
+                }
+            </script>
+        </section>
+        
+        
+        
+
+        <section id="bootstrap" class="section">
+            <h2>Maquetación con Bootstrap</h2>
+            <p><strong>Descripción:</strong></p>
+            <ul>
+                <li>Muestra el uso de las utilidades de Bootstrap para crear una cuadrícula responsiva con estilos atractivos.</li>
+            </ul>
+            <p><strong>Caso de Uso:</strong></p>
+            <ul>
+                <li><strong>Diseño Web Moderno:</strong> Crear layouts con secciones bien estructuradas.</li>
+                <li><strong>Portafolios:</strong> Mostrar proyectos o servicios en bloques diferenciados.</li>
+                <li><strong>Tiendas Online:</strong> Destacar productos en filas y columnas.</li>
+            </ul>
+            <p><strong>Funcionalidad Técnica:</strong></p>
+            <ul>
+                <li>Usa clases como <code>col-lg-3</code> y <code>col-md-6</code> para controlar el tamaño de las columnas según el ancho de la pantalla.</li>
+                <li>Aplica clases como <code>bg-*</code> y <code>text-*</code> para estilos personalizados.</li>
+            </ul>
+            <div class="container">
+                <!-- Contenedor de la cuadrícula -->
+                <div class="row">
+                    <!-- Primera columna -->
+                    <div class="col-lg-3 col-md-6 bg-primary-subtle text-primary text-center">
+                        <!-- Texto centrado en la columna -->
+                        <h2>HOLA MUNDO</h2>
+                    </div>
+                    <!-- Segunda columna -->
+                    <div class="col-lg-3 col-md-6 bg-black text-white text-center">
+                        <h2>HOLA MUNDO</h2>
+                    </div>
+                    <!-- Tercera columna -->
+                    <div class="col-lg-3 col-md-6 bg-warning text-dark text-center">
+                        <h2>HOLA MUNDO</h2>
+                    </div>
+                    <!-- Cuarta columna -->
+                    <div class="col-lg-3 col-md-6 bg-success text-white text-center">
+                        <h2>HOLA MUNDO</h2>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        
+        <section id="arrays" class="section">
+            <h2>Gestión de Arrays Dinámicos</h2>
+    <p><strong>Descripción:</strong></p>
+    <ul>
+        <li>Permite gestionar una lista dinámica donde los usuarios pueden agregar elementos y visualizarlos en una lista.</li>
+    </ul>
+    <p><strong>Caso de Uso:</strong></p>
+    <ul>
+        <li><strong>Listas de Compras:</strong> Crear y administrar listas de artículos.</li>
+        <li><strong>Aplicaciones Educativas:</strong> Registrar resultados de actividades o experimentos.</li>
+        <li><strong>Gestión de Proyectos:</strong> Registrar tareas y su estado.</li>
+    </ul>
+    <p><strong>Funcionalidad Técnica:</strong></p>
+    <ul>
+        <li>Los elementos ingresados se almacenan en un array y se sincronizan con el DOM.</li>
+        <li>Permite expandirse para incluir funcionalidades como eliminación, edición y almacenamiento local.</li>
+    </ul>
+            
+            <!-- Formulario para agregar un nuevo elemento -->
+            <form>
+                <label>Elemento a Comprar</label><br>
+                <input type="text" id="elemento" name="elemento"><br>
+                <button type="button" onclick="agregarElemento()">Añadir</button>
+            </form>
+        
+            <!-- Encabezado para la lista -->
+            <h3>Listado de Compra</h3>
+            
+            <!-- Lista dinámica donde se mostrarán los elementos -->
+            <ul id="listado"></ul>
+        
+            <script>
+                // Array para almacenar los elementos añadidos
+                let listaCompra = [];
+        
+                // Función para agregar un elemento al array y actualizar la lista
+                function agregarElemento() {
+                    // Obtiene el valor del campo de entrada
+                    let nuevoElemento = document.getElementById('elemento').value;
+        
+                    // Si el campo está vacío, no hace nada
+                    if (!nuevoElemento) {
+                        alert("Por favor, introduce un elemento.");
+                        return;
+                    }
+        
+                    // Añade el nuevo elemento al array
+                    listaCompra.push(nuevoElemento);
+        
+                    // Limpia el campo de entrada después de añadir
+                    document.getElementById('elemento').value = "";
+        
+                    // Actualiza la vista de la lista
+                    actualizaListado();
+                }
+        
+                // Función para actualizar el contenido de la lista en el DOM
+                function actualizaListado() {
+                    // Obtiene la referencia al elemento `<ul>` en el DOM
+                    let lista = document.getElementById('listado');
+        
+                    // Limpia el contenido actual de la lista
+                    lista.innerHTML = "";
+        
+                    // Recorre el array y crea un `<li>` para cada elemento
+                    listaCompra.forEach(item => {
+                        let li = document.createElement("li"); // Crea un elemento de lista
+                        li.textContent = item; // Añade el texto del elemento
+                        lista.appendChild(li); // Lo añade al `<ul>`
+                    });
+                }
+            </script>
+        </section>
+        
+    </main>
+</body>
+
+</html>
