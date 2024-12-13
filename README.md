@@ -62,7 +62,29 @@ Este repositorio contiene una colección de herramientas y ejemplos prácticos o
 
 ---
 
-### 6. **Python**
+### 6. **Kotlin**
+- **Descripción:**
+  Ejemplos y proyectos en Kotlin, un lenguaje moderno que combina simplicidad y funcionalidad avanzada.
+- **Contenido Planeado:**
+  - Ejercicios básicos y estructuras de control.
+  - Uso de corrutinas para programación asíncrona.
+  - Interoperabilidad con Java.
+  - Aplicaciones prácticas para Android.
+
+---
+
+### 7. **Android**
+- **Descripción:**
+  Desarrollo de aplicaciones móviles nativas para Android utilizando Android Studio y Kotlin.
+- **Contenido Planeado:**
+  - Interfaces de usuario con Jetpack Compose y XML.
+  - Integración de bases de datos locales con Room.
+  - Uso de APIs externas con Retrofit.
+  - Pruebas unitarias y de interfaz.
+
+---
+
+### 8. **Python**
 - **Descripción:**
   Recursos y ejemplos enfocados en programación en Python.
 - **Contenido Planeado:**
@@ -72,7 +94,7 @@ Este repositorio contiene una colección de herramientas y ejemplos prácticos o
 
 ---
 
-### 7. **SQL**
+### 9. **SQL**
 - **Descripción:**
   Consultas SQL y prácticas de bases de datos.
 - **Contenido Planeado:**
@@ -82,7 +104,7 @@ Este repositorio contiene una colección de herramientas y ejemplos prácticos o
 
 ---
 
-### 8. **Programación Multimedia y Dispositivos Móviles**
+### 10. **Programación Multimedia y Dispositivos Móviles**
 - **Descripción:**
   Ejercicios y proyectos relacionados con el desarrollo de aplicaciones multimedia y móviles.
 - **Contenido Planeado:**
